@@ -25,32 +25,32 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// generateCmd represents the generate command
-var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generate template starter file for assets",
-	Long: `Generate an empty starter template file for database assets such as a
+// addCmd represents the add command
+var addCmd = &cobra.Command{
+	Use:   "add <type> <name>",
+	Short: "Add template starter file for assets",
+	Long: `Add an empty starter template file for database assets such as a
 migration, function, procedure or view. For example:
 
-kumiho generate migration my_migration_name
+kumiho add migration my_migration_name
 
-kumiho generate function my_function_name
+kumiho add function my_function_name
 
-kumiho generate procedure my_procedure_name
+kumiho add procedure my_procedure_name
 
-kumiho generate view my_view_name`,
+kumiho add view my_view_name`,
 }
 
 func init() {
-	rootCmd.AddCommand(generateCmd)
+	rootCmd.AddCommand(addCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	generateCmd.PersistentFlags().String("schema", "dbo", "Custom database schema to use for the generated script")
+	addCmd.PersistentFlags().String("schema", "dbo", "Custom database schema to use for the add script")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// generateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

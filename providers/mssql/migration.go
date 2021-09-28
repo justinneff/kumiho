@@ -2,6 +2,6 @@ package mssql
 
 import "fmt"
 
-func GenerateMigration() {
-	fmt.Println("mssql.GenerateMigration() called")
+func AddMigration() {
+	fmt.Println("mssql.AddMigration() called")
 }

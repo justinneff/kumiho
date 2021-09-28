@@ -33,13 +33,13 @@ import (
 // migrationCmd represents the migration command
 var migrationCmd = &cobra.Command{
 	Use:   "migration <name>",
-	Short: "Generates a template migration script file",
+	Short: "Adds a template migration script file",
 	Long: `Create a new migration script file in the migrations directory.
 
 For example:
-kumiho generate migration add_column_to_table
+kumiho add migration add_column_to_table
 
-Would generate the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
+Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("requires a migration name")
@@ -47,16 +47,16 @@ Would generate the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate migration called")
+		fmt.Println("add migration called")
 		fmt.Printf("migration name %s\n", args[0])
-		fmt.Printf("schema %s\n", generateCmd.PersistentFlags().Lookup("schema").Value)
+		fmt.Printf("schema %s\n", addCmd.PersistentFlags().Lookup("schema").Value)
 		fmt.Printf("database dir %s\n", viper.GetString("Dir"))
-		mssql.GenerateMigration()
+		mssql.AddMigration()
 	},
 }
 
 func init() {
-	generateCmd.AddCommand(migrationCmd)
+	addCmd.AddCommand(migrationCmd)
 
 	// Here you will define your flags and configuration settings.
 
