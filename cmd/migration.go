@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/justinneff/kumiho/providers/mssql"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -50,6 +51,7 @@ Would generate the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql
 		fmt.Printf("migration name %s\n", args[0])
 		fmt.Printf("schema %s\n", generateCmd.PersistentFlags().Lookup("schema").Value)
 		fmt.Printf("database dir %s\n", viper.GetString("Dir"))
+		mssql.GenerateMigration()
 	},
 }
 
