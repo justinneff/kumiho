@@ -24,8 +24,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/fs"
+	"os"
+	"path"
+	"time"
 
-	"github.com/justinneff/kumiho/providers/mssql"
+	"github.com/justinneff/kumiho/providers"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -46,12 +50,33 @@ Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 		}
 		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("add migration called")
-		fmt.Printf("migration name %s\n", args[0])
-		fmt.Printf("schema %s\n", addCmd.PersistentFlags().Lookup("schema").Value)
-		fmt.Printf("database dir %s\n", viper.GetString("Dir"))
-		mssql.AddMigration()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		viper.GetString("Provider")
+		p, err := providers.GetProvider(viper.GetString("Provider"))
+		cobra.CheckErr(err)
+
+		name := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), args[0])
+		cwd, err := os.Getwd()
+		cobra.CheckErr(err)
+
+		outDir := path.Join(cwd, viper.GetString("Dir"), "migrations")
+		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))
+
+		if fs.ValidPath(filename) {
+			return fmt.Errorf("migration already exists at %s", filename)
+		}
+
+		content, err := p.GenerateMigration(name)
+		cobra.CheckErr(err)
+
+		err = os.MkdirAll(outDir, 0755)
+		cobra.CheckErr(err)
+
+		err = os.WriteFile(filename, []byte(content), 0777)
+		cobra.CheckErr(err)
+
+		fmt.Printf("Created migration: %s\n", filename)
+		return nil
 	},
 }
 
