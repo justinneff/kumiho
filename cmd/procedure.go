@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path"
 
@@ -50,6 +51,12 @@ include the --schema flag.
 kumiho add procedure my_procedure --schema Sales
 
 This would create the file ./db/Sales/procedures/my_procedure.sql.`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires a procedure name")
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		p, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)

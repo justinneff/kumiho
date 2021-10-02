@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path"
 
@@ -51,6 +52,12 @@ kumiho add function my_function --schema Sales
 
 To create a function that returns a table instead of a scalar value , include
 the --table flag`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return errors.New("requires a function name")
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		p, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
