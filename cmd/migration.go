@@ -51,7 +51,6 @@ Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		viper.GetString("Provider")
 		p, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
