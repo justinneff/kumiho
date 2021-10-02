@@ -74,6 +74,17 @@ RETURN (
 	return fmt.Sprintf(template, schema, name), nil
 }
 
+func (mssql Mssql) GenerateView(schema, name string) (string, error) {
+	template := `CREATE VIEW [%s].[%s]
+AS
+SELECT
+	*
+FROM
+	[dbo].[SomeTableOrView];
+`
+	return fmt.Sprintf(template, schema, name), nil
+}
+
 func (mssql Mssql) ResolveSchema(schema string) (string, error) {
 	if len(schema) == 0 {
 		return "dbo", nil

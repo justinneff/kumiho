@@ -9,6 +9,7 @@ type Provider interface {
 	GenerateProcedure(schema, name string) (string, error)
 	GenerateScalarFunction(schema, name string) (string, error)
 	GenerateTableFunction(schema, name string) (string, error)
+	GenerateView(schema, name string) (string, error)
 	ResolveSchema(schema string) (string, error)
 }
 
