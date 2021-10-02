@@ -6,8 +6,7 @@ type Mssql struct {
 }
 
 func (mssql Mssql) GenerateMigration(name string) (string, error) {
-	template := `
-/*******************************************************************************
+	template := `/*******************************************************************************
 * Migration: %s
 *******************************************************************************/
 /*
@@ -22,9 +21,8 @@ func (mssql Mssql) GenerateMigration(name string) (string, error) {
 	return fmt.Sprintf(template, name), nil
 }
 
-func (mssql Mssql) GenerateProcedure(schema string, name string) (string, error) {
-	template := `
-CREATE PROCEDURE [%s].[%s]
+func (mssql Mssql) GenerateProcedure(schema, name string) (string, error) {
+	template := `CREATE PROCEDURE [%s].[%s]
 (
 	@param1 INT,
 	@param2 INT
@@ -35,6 +33,43 @@ BEGIN
 	SET NOCOUNT ON;
 
 END
+`
+	return fmt.Sprintf(template, schema, name), nil
+}
+
+func (mssql Mssql) GenerateScalarFunction(schema, name string) (string, error) {
+	template := `CREATE FUNCTION [%s].[%s]
+(
+	@param1 INT
+)
+RETURNS INT
+AS
+BEGIN
+
+	DECLARE @m_Value INT;
+
+	SET @m_Value = @param1;
+
+	return @m_Value;
+
+END
+`
+	return fmt.Sprintf(template, schema, name), nil
+}
+
+func (mssql Mssql) GenerateTableFunction(schema, name string) (string, error) {
+	template := `CREATE FUNCTION [%s].[%s]
+(
+	@param1 INT
+)
+RETURNS TABLE
+AS
+RETURN (
+	SELECT
+		*
+	FROM
+		[dbo].[SomeTableOrView]
+);
 `
 	return fmt.Sprintf(template, schema, name), nil
 }
