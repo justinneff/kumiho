@@ -23,11 +23,10 @@ package cmd
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
 	"path"
 
 	"github.com/justinneff/kumiho/providers"
+	"github.com/justinneff/kumiho/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -58,34 +57,19 @@ This would create the file ./db/Sales/procedures/my_procedure.sql.`,
 		schema, err := p.ResolveSchema(addCmd.PersistentFlags().Lookup("schema").Value.String())
 		cobra.CheckErr(err)
 
-		cwd, err := os.Getwd()
+		outDir, err := utils.GetOutDir("procedures", schema)
 		cobra.CheckErr(err)
-
-		var outDir string
-
-		if len(schema) > 0 {
-			outDir = path.Join(cwd, viper.GetString("Dir"), schema, "procedures")
-		} else {
-			outDir = path.Join(cwd, viper.GetString("Dir"), "procedures")
-		}
 
 		name := args[0]
 		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))
 
-		if fs.ValidPath(filename) {
-			return fmt.Errorf("procedure already exists at %s", filename)
-		}
-
 		content, err := p.GenerateProcedure(schema, name)
 		cobra.CheckErr(err)
 
-		err = os.MkdirAll(outDir, 0755)
+		err = utils.WriteOutFile(filename, content)
 		cobra.CheckErr(err)
 
-		err = os.WriteFile(filename, []byte(content), 0777)
-		cobra.CheckErr(err)
-
-		fmt.Printf("Create procedure: %s\n", filename)
+		fmt.Printf("Created procedure: %s\n", filename)
 		return nil
 	},
 }

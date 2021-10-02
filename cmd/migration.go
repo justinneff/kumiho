@@ -24,12 +24,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io/fs"
-	"os"
 	"path"
 	"time"
 
 	"github.com/justinneff/kumiho/providers"
+	"github.com/justinneff/kumiho/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -55,23 +54,16 @@ Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 		cobra.CheckErr(err)
 
 		name := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), args[0])
-		cwd, err := os.Getwd()
+
+		outDir, err := utils.GetOutDir("migrations", "")
 		cobra.CheckErr(err)
 
-		outDir := path.Join(cwd, viper.GetString("Dir"), "migrations")
 		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))
-
-		if fs.ValidPath(filename) {
-			return fmt.Errorf("migration already exists at %s", filename)
-		}
 
 		content, err := p.GenerateMigration(name)
 		cobra.CheckErr(err)
 
-		err = os.MkdirAll(outDir, 0755)
-		cobra.CheckErr(err)
-
-		err = os.WriteFile(filename, []byte(content), 0777)
+		err = utils.WriteOutFile(filename, content)
 		cobra.CheckErr(err)
 
 		fmt.Printf("Created migration: %s\n", filename)
