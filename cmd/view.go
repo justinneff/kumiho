@@ -57,7 +57,7 @@ This would create the file ./db/Sales/views/my_view.sql.`,
 		}
 		return nil
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		p, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
@@ -77,7 +77,6 @@ This would create the file ./db/Sales/views/my_view.sql.`,
 		cobra.CheckErr(err)
 
 		fmt.Printf("Create view: %s\n", filename)
-		return nil
 	},
 }
 

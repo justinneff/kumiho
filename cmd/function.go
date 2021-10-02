@@ -58,7 +58,7 @@ the --table flag`,
 		}
 		return nil
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		p, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
@@ -87,7 +87,6 @@ the --table flag`,
 		cobra.CheckErr(err)
 
 		fmt.Printf("Created function %s\n", filename)
-		return nil
 	},
 }
 

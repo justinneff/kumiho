@@ -49,7 +49,7 @@ Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 		}
 		return nil
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		p, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
@@ -67,7 +67,6 @@ Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 		cobra.CheckErr(err)
 
 		fmt.Printf("Created migration: %s\n", filename)
-		return nil
 	},
 }
 
