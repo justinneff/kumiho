@@ -21,6 +21,26 @@ func (mssql Mssql) GenerateMigration(name string) (string, error) {
 	return fmt.Sprintf(template, name), nil
 }
 
+func (mssql Mssql) GeneratePostDeploy(name string) (string, error) {
+	template := `/*******************************************************************************
+* Post-Deployment: %s
+*******************************************************************************/
+
+// Write your post-deployment script here for example:
+`
+	return fmt.Sprintf(template, name), nil
+}
+
+func (mssql Mssql) GeneratePreDeploy(name string) (string, error) {
+	template := `/*******************************************************************************
+* Pre-Deployment: %s
+*******************************************************************************/
+
+// Write your pre-deployment script here for example:
+`
+	return fmt.Sprintf(template, name), nil
+}
+
 func (mssql Mssql) GenerateProcedure(schema, name string) (string, error) {
 	template := `CREATE PROCEDURE [%s].[%s]
 (
