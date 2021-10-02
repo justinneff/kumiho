@@ -56,7 +56,7 @@ Would add the file ./db/preDeploy/{yyyyMMddHHmmss}_do_something.sql`,
 
 		name := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), args[0])
 
-		outDir, err := utils.GetOutDir("preDeploy", "")
+		outDir, err := utils.GetScriptDir("preDeploy")
 		cobra.CheckErr(err)
 
 		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))

@@ -55,7 +55,7 @@ Would add the file ./db/migrations/{yyyyMMddHHmmss}_add_column_to_table.sql`,
 
 		name := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), args[0])
 
-		outDir, err := utils.GetOutDir("migrations", "")
+		outDir, err := utils.GetScriptDir("migrations")
 		cobra.CheckErr(err)
 
 		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))

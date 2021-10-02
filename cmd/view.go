@@ -41,16 +41,16 @@ var viewCmd = &cobra.Command{
 For example:
 kumiho add view my_view
 
-This would create the file ./db/views/my_view.sql. If the provider,
+This would create the file ./db/objects/views/my_view.sql. If the provider,
 supports schemas and has a default schema then the created file would be at
-./db/{defaultSchema}/views/my_view.sql.
+./db/objects/{defaultSchema}/views/my_view.sql.
 
 To assign the view to a database schema other than the provider default,
 include the --schema flag.
 
 kumiho add view my_view --schema Sales
 
-This would create the file ./db/Sales/views/my_view.sql.`,
+This would create the file ./db/objects/Sales/views/my_view.sql.`,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("requires a view name")
@@ -64,7 +64,7 @@ This would create the file ./db/Sales/views/my_view.sql.`,
 		schema, err := p.ResolveSchema(addCmd.PersistentFlags().Lookup("schema").Value.String())
 		cobra.CheckErr(err)
 
-		outDir, err := utils.GetOutDir("views", schema)
+		outDir, err := utils.GetObjectDir("views", schema)
 		cobra.CheckErr(err)
 
 		name := args[0]

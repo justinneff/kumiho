@@ -8,17 +8,22 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GetOutDir(scriptType, schema string) (string, error) {
+func GetObjectDir(objectType, schema string) (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 
-	if len(schema) > 0 {
-		return path.Join(cwd, viper.GetString("Dir"), schema, scriptType), nil
-	} else {
-		return path.Join(cwd, viper.GetString("Dir"), scriptType), nil
+	return path.Join(cwd, viper.GetString("Dir"), "objects", schema, objectType), nil
+}
+
+func GetScriptDir(scriptType string) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
 	}
+
+	return path.Join(cwd, viper.GetString("Dir"), scriptType), nil
 }
 
 func WriteOutFile(filename, content string) error {

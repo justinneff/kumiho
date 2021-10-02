@@ -41,14 +41,16 @@ var functionCmd = &cobra.Command{
 For example:
 kumiho add function my_function
 
-This would create the file ./db/functions/my_function.sql. If the provider,
+This would create the file ./db/objects/functions/my_function.sql. If the provider,
 supports schemas and has a default schema then the created file would be at
-./db/{defaultSchema}/functions/my_function.sql.
+./db/objects/{defaultSchema}/functions/my_function.sql.
 
 To assign the function to a database schema other than the provider default,
 include the --schema flag.
 
 kumiho add function my_function --schema Sales
+
+This would create the file ./db/objects/Sales/functions/my_function.sql.
 
 To create a function that returns a table instead of a scalar value , include
 the --table flag`,
@@ -65,7 +67,7 @@ the --table flag`,
 		schema, err := p.ResolveSchema(addCmd.PersistentFlags().Lookup("schema").Value.String())
 		cobra.CheckErr(err)
 
-		outDir, err := utils.GetOutDir("functions", schema)
+		outDir, err := utils.GetObjectDir("functions", schema)
 		cobra.CheckErr(err)
 
 		name := args[0]
