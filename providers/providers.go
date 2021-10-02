@@ -6,6 +6,8 @@ import (
 
 type Provider interface {
 	GenerateMigration(name string) (string, error)
+	GenerateProcedure(schema string, name string) (string, error)
+	ResolveSchema(schema string) (string, error)
 }
 
 func GetProvider(providerType string) (Provider, error) {

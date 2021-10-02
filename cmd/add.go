@@ -48,7 +48,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	addCmd.PersistentFlags().String("schema", "dbo", "Custom database schema to use for the add script")
+	addCmd.PersistentFlags().String("schema", "", "Custom database schema to use for the add script")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
