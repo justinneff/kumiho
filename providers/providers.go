@@ -12,6 +12,7 @@ type Provider interface {
 	GenerateScalarFunction(schema, name string) (string, error)
 	GenerateTableFunction(schema, name string) (string, error)
 	GenerateView(schema, name string) (string, error)
+	GetObjectSchemaAndName(content []byte) (string, string)
 	ResolveSchema(schema string) (string, error)
 }
 
