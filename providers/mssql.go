@@ -9,14 +9,12 @@ func (mssql Mssql) GenerateMigration(name string) (string, error) {
 	template := `/*******************************************************************************
 * Migration: %s
 *******************************************************************************/
-/*
-	Write your migration here for example:
-	CREATE TABLE [dbo].[MyAwesomeTable] (
-		[id] INT IDENTITY(1,1) NOT NULL,
-		[name] NVARCHAR(100) NOT NULL,
-		CONSTRAINT [PK_MyAwesomeTable] PRIMARY KEY CLUSTERED ([id])
-	)
-*/
+-- Write your migration here for example:
+-- CREATE TABLE [dbo].[MyAwesomeTable] (
+-- 	[id] INT IDENTITY(1,1) NOT NULL
+-- 		CONSTRAINT [PK_MyAwesomeTable] PRIMARY KEY CLUSTERED,
+-- 	[name] NVARCHAR(100) NOT NULL
+-- )
 `
 	return fmt.Sprintf(template, name), nil
 }
@@ -26,7 +24,7 @@ func (mssql Mssql) GeneratePostDeploy(name string) (string, error) {
 * Post-Deployment: %s
 *******************************************************************************/
 
-// Write your post-deployment script here for example:
+-- Write your post-deployment script here for example:
 `
 	return fmt.Sprintf(template, name), nil
 }
@@ -36,7 +34,7 @@ func (mssql Mssql) GeneratePreDeploy(name string) (string, error) {
 * Pre-Deployment: %s
 *******************************************************************************/
 
-// Write your pre-deployment script here for example:
+-- Write your pre-deployment script here for example:
 `
 	return fmt.Sprintf(template, name), nil
 }
