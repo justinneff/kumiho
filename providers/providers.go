@@ -13,6 +13,7 @@ type Provider interface {
 	GenerateTableFunction(schema, name string) (string, error)
 	GenerateView(schema, name string) (string, error)
 	GetObjectSchemaAndName(content []byte) (string, string)
+	IsDependency(content []byte, schema, name string) (bool, error)
 	ResolveSchema(schema string) (string, error)
 }
 

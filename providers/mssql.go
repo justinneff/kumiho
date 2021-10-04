@@ -126,6 +126,23 @@ func (mssql Mssql) GetObjectSchemaAndName(content []byte) (schema, name string) 
 	return
 }
 
+func (mssql Mssql) IsDependency(content []byte, schema, name string) (matched bool, err error) {
+	matched = false
+	if len(schema) > 0 {
+		pattern1 := fmt.Sprintf(`(?i)\[?%s\]?\.\[?%s\]?`, schema, name)
+		if matched, err = regexp.Match(pattern1, content); err != nil {
+			return
+		}
+	}
+	if !matched {
+		pattern2 := fmt.Sprintf(`(?i)[^\.]\[?%s\]?`, name)
+		if matched, err = regexp.Match(pattern2, content); err != nil {
+			return
+		}
+	}
+	return
+}
+
 func (mssql Mssql) ResolveSchema(schema string) (string, error) {
 	if len(schema) == 0 {
 		return mssqlDefaultSchema, nil

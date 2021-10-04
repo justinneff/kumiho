@@ -22,7 +22,6 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/justinneff/kumiho/providers"
@@ -49,12 +48,18 @@ the database. Results are cached to the .kumiho folder.`,
 		objectPaths, err := publishing.GetDatabaseObjectPaths(dbDir)
 		cobra.CheckErr(err)
 
+		var objects []publishing.DatabaseObject
+
 		for _, obj := range objectPaths {
 			item, err := publishing.CreateDatabaseObject(obj, p)
 			cobra.CheckErr(err)
-			itemJson, err := json.Marshal(item)
+			objects = append(objects, *item)
+		}
+
+		for _, obj := range objects {
+			err = publishing.ResolveDependencies(&obj, objects, p)
 			cobra.CheckErr(err)
-			fmt.Println(string(itemJson))
+			fmt.Printf("%s.%s deps: %s\n", obj.Schema, obj.Name, obj.Dependencies)
 		}
 	},
 }

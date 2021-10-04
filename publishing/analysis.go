@@ -3,6 +3,7 @@ package publishing
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ type DatabaseObject struct {
 	SourceFile   string   `json:"sourceFile"`
 	Hash         string   `json:"hash"`
 	Dependencies []string `json:"dependencies"`
+	content      []byte
 }
 
 func GetDatabaseObjectPaths(dbDir string) ([]string, error) {
@@ -54,6 +56,7 @@ func CreateDatabaseObject(filename string, provider providers.Provider) (*Databa
 	if err != nil {
 		return nil, err
 	}
+	item.content = data
 
 	schema, name := provider.GetObjectSchemaAndName(data)
 	item.Schema = schema
@@ -66,4 +69,19 @@ func CreateDatabaseObject(filename string, provider providers.Provider) (*Databa
 	item.Hash = hex.EncodeToString(h.Sum(nil))
 
 	return &item, nil
+}
+
+func ResolveDependencies(obj *DatabaseObject, otherObjects []DatabaseObject, provider providers.Provider) error {
+	for _, other := range otherObjects {
+		if obj.Hash != other.Hash {
+			matched, err := provider.IsDependency(obj.content, other.Schema, other.Name)
+			if err != nil {
+				return err
+			}
+			if matched {
+				obj.Dependencies = append(obj.Dependencies, fmt.Sprintf("%s.%s", other.Schema, other.Name))
+			}
+		}
+	}
+	return nil
 }
