@@ -21,7 +21,7 @@ type DatabaseObject struct {
 	content      []byte
 }
 
-func GetDatabaseObjectPaths(dbDir string) ([]string, error) {
+func getDatabaseObjectPaths(dbDir string) ([]string, error) {
 	objectsDir := filepath.Join(dbDir, "objects")
 
 	var objectFiles []string
@@ -49,7 +49,7 @@ func GetDatabaseObjectPaths(dbDir string) ([]string, error) {
 	return objectFiles, nil
 }
 
-func CreateDatabaseObject(filename string, provider providers.Provider) (*DatabaseObject, error) {
+func createDatabaseObject(filename string, provider providers.Provider) (*DatabaseObject, error) {
 	item := DatabaseObject{}
 	item.SourceFile = filename
 
@@ -78,7 +78,7 @@ func CreateDatabaseObject(filename string, provider providers.Provider) (*Databa
 	return &item, nil
 }
 
-func ResolveDependencies(obj *DatabaseObject, otherObjects []DatabaseObject, provider providers.Provider) ([]string, error) {
+func resolveDependencies(obj *DatabaseObject, otherObjects []DatabaseObject, provider providers.Provider) ([]string, error) {
 	var deps []string
 	for _, other := range otherObjects {
 		if obj.Hash != other.Hash {
@@ -111,7 +111,7 @@ func allDependenciesIncluded(dependencies []string, objects []DatabaseObject) bo
 	return true
 }
 
-func SortObjects(remaining []DatabaseObject, sorted []DatabaseObject) []DatabaseObject {
+func sortObjects(remaining []DatabaseObject, sorted []DatabaseObject) []DatabaseObject {
 	if len(remaining) == 0 {
 		return sorted
 	}
@@ -126,5 +126,35 @@ func SortObjects(remaining []DatabaseObject, sorted []DatabaseObject) []Database
 		}
 	}
 
-	return SortObjects(nextRemaining, sorted)
+	return sortObjects(nextRemaining, sorted)
+}
+
+func LoadDatabaseObjects(dbDir string, provider providers.Provider) ([]DatabaseObject, error) {
+	objectPaths, err := getDatabaseObjectPaths(dbDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var objects []DatabaseObject
+
+	for _, obj := range objectPaths {
+		item, err := createDatabaseObject(obj, provider)
+		if err != nil {
+			return nil, err
+		}
+		objects = append(objects, *item)
+	}
+
+	for i, obj := range objects {
+		deps, err := resolveDependencies(&obj, objects, provider)
+		if err != nil {
+			return nil, err
+		}
+		objects[i].Dependencies = deps
+	}
+
+	var sortedObjects []DatabaseObject
+	sortedObjects = sortObjects(objects, sortedObjects)
+
+	return sortedObjects, nil
 }

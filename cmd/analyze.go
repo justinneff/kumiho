@@ -39,36 +39,19 @@ var analyzeCmd = &cobra.Command{
 objects. The results are printed showing the order objects will be published to
 the database. Results are cached to the .kumiho folder.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := providers.GetProvider(viper.GetString("Provider"))
+		provider, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
 		dbDir, err := utils.GetDatabaseDir()
 		cobra.CheckErr(err)
 
-		objectPaths, err := publishing.GetDatabaseObjectPaths(dbDir)
+		databaseObjects, err := publishing.LoadDatabaseObjects(dbDir, provider)
 		cobra.CheckErr(err)
-
-		var objects []publishing.DatabaseObject
-
-		for _, obj := range objectPaths {
-			item, err := publishing.CreateDatabaseObject(obj, p)
-			cobra.CheckErr(err)
-			objects = append(objects, *item)
-		}
-
-		for i, obj := range objects {
-			deps, err := publishing.ResolveDependencies(&obj, objects, p)
-			cobra.CheckErr(err)
-			objects[i].Dependencies = deps
-		}
-
-		var sortedObjects []publishing.DatabaseObject
-		sortedObjects = publishing.SortObjects(objects, sortedObjects)
 
 		fmt.Println("\nDatabase Objects with Dependencies")
 
-		for i, obj := range sortedObjects {
-			isLastObj := i == len(sortedObjects)-1
+		for i, obj := range databaseObjects {
+			isLastObj := i == len(databaseObjects)-1
 			if isLastObj {
 				fmt.Print("└─ ")
 			} else {
