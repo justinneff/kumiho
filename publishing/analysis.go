@@ -14,6 +14,7 @@ import (
 type DatabaseObject struct {
 	Name         string   `json:"name"`
 	Schema       string   `json:"schema"`
+	FullName     string   `json:"fullName"`
 	SourceFile   string   `json:"sourceFile"`
 	Hash         string   `json:"hash"`
 	Dependencies []string `json:"dependencies"`
@@ -62,6 +63,12 @@ func CreateDatabaseObject(filename string, provider providers.Provider) (*Databa
 	item.Schema = schema
 	item.Name = name
 
+	if len(item.Schema) == 0 {
+		item.FullName = item.Name
+	} else {
+		item.FullName = fmt.Sprintf("%s.%s", item.Schema, item.Name)
+	}
+
 	// Compute checksum hash of the file contents. This is used to determine
 	// if the file has been modified.
 	h := sha1.New()
@@ -71,17 +78,53 @@ func CreateDatabaseObject(filename string, provider providers.Provider) (*Databa
 	return &item, nil
 }
 
-func ResolveDependencies(obj *DatabaseObject, otherObjects []DatabaseObject, provider providers.Provider) error {
+func ResolveDependencies(obj *DatabaseObject, otherObjects []DatabaseObject, provider providers.Provider) ([]string, error) {
+	var deps []string
 	for _, other := range otherObjects {
 		if obj.Hash != other.Hash {
 			matched, err := provider.IsDependency(obj.content, other.Schema, other.Name)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if matched {
-				obj.Dependencies = append(obj.Dependencies, fmt.Sprintf("%s.%s", other.Schema, other.Name))
+				deps = append(deps, other.FullName)
 			}
 		}
 	}
-	return nil
+	return deps, nil
+}
+
+func allDependenciesIncluded(dependencies []string, objects []DatabaseObject) bool {
+	for _, dep := range dependencies {
+		found := false
+
+		for _, obj := range objects {
+			if dep == obj.FullName {
+				found = true
+			}
+		}
+
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func SortObjects(remaining []DatabaseObject, sorted []DatabaseObject) []DatabaseObject {
+	if len(remaining) == 0 {
+		return sorted
+	}
+
+	var nextRemaining []DatabaseObject
+
+	for _, obj := range remaining {
+		if allDependenciesIncluded(obj.Dependencies, sorted) {
+			sorted = append(sorted, obj)
+		} else {
+			nextRemaining = append(nextRemaining, obj)
+		}
+	}
+
+	return SortObjects(nextRemaining, sorted)
 }

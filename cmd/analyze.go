@@ -56,10 +56,38 @@ the database. Results are cached to the .kumiho folder.`,
 			objects = append(objects, *item)
 		}
 
-		for _, obj := range objects {
-			err = publishing.ResolveDependencies(&obj, objects, p)
+		for i, obj := range objects {
+			deps, err := publishing.ResolveDependencies(&obj, objects, p)
 			cobra.CheckErr(err)
-			fmt.Printf("%s.%s deps: %s\n", obj.Schema, obj.Name, obj.Dependencies)
+			objects[i].Dependencies = deps
+		}
+
+		var sortedObjects []publishing.DatabaseObject
+		sortedObjects = publishing.SortObjects(objects, sortedObjects)
+
+		fmt.Println("\nDatabase Objects with Dependencies")
+
+		for i, obj := range sortedObjects {
+			isLastObj := i == len(sortedObjects)-1
+			if isLastObj {
+				fmt.Print("└─ ")
+			} else {
+				fmt.Print("├─ ")
+			}
+			fmt.Printf("%s\n", obj.FullName)
+			for d, dep := range obj.Dependencies {
+				if isLastObj {
+					fmt.Print("   ")
+				} else {
+					fmt.Print("│  ")
+				}
+				if d == len(obj.Dependencies)-1 {
+					fmt.Print("└─ ")
+				} else {
+					fmt.Print("├─ ")
+				}
+				fmt.Printf("%s\n", dep)
+			}
 		}
 	},
 }
