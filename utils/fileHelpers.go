@@ -1,12 +1,20 @@
 package utils
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path"
 
 	"github.com/spf13/viper"
 )
+
+func ComputeHash(data []byte) string {
+	h := sha1.New()
+	h.Write(data)
+	return hex.EncodeToString(h.Sum(nil))
+}
 
 func GetDatabaseDir() (string, error) {
 	cwd, err := os.Getwd()

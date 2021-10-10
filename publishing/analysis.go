@@ -1,25 +1,11 @@
 package publishing
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
-	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 
-	"github.com/justinneff/kumiho/providers"
+	"github.com/justinneff/kumiho/entities"
 )
-
-type DatabaseObject struct {
-	Name         string   `json:"name"`
-	Schema       string   `json:"schema"`
-	FullName     string   `json:"fullName"`
-	SourceFile   string   `json:"sourceFile"`
-	Hash         string   `json:"hash"`
-	Dependencies []string `json:"dependencies"`
-	content      []byte
-}
 
 func getDatabaseObjectPaths(dbDir string) ([]string, error) {
 	objectsDir := filepath.Join(dbDir, "objects")
@@ -49,57 +35,28 @@ func getDatabaseObjectPaths(dbDir string) ([]string, error) {
 	return objectFiles, nil
 }
 
-func createDatabaseObject(filename string, provider providers.Provider) (*DatabaseObject, error) {
-	item := DatabaseObject{}
-	item.SourceFile = filename
-
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	item.content = data
-
-	schema, name := provider.GetObjectSchemaAndName(data)
-	item.Schema = schema
-	item.Name = name
-
-	if len(item.Schema) == 0 {
-		item.FullName = item.Name
-	} else {
-		item.FullName = fmt.Sprintf("%s.%s", item.Schema, item.Name)
-	}
-
-	// Compute checksum hash of the file contents. This is used to determine
-	// if the file has been modified.
-	h := sha1.New()
-	h.Write(data)
-	item.Hash = hex.EncodeToString(h.Sum(nil))
-
-	return &item, nil
-}
-
-func resolveDependencies(obj *DatabaseObject, otherObjects []DatabaseObject, provider providers.Provider) ([]string, error) {
+func resolveDependencies(obj *entities.DatabaseObject, otherObjects []*entities.DatabaseObject, provider entities.Provider) ([]string, error) {
 	var deps []string
 	for _, other := range otherObjects {
 		if obj.Hash != other.Hash {
-			matched, err := provider.IsDependency(obj.content, other.Schema, other.Name)
+			matched, err := provider.IsDependency(obj.Content(), other.Schema, other.Name)
 			if err != nil {
 				return nil, err
 			}
 			if matched {
-				deps = append(deps, other.FullName)
+				deps = append(deps, other.FullName())
 			}
 		}
 	}
 	return deps, nil
 }
 
-func allDependenciesIncluded(dependencies []string, objects []DatabaseObject) bool {
+func allDependenciesIncluded(dependencies []string, objects []*entities.DatabaseObject) bool {
 	for _, dep := range dependencies {
 		found := false
 
 		for _, obj := range objects {
-			if dep == obj.FullName {
+			if dep == obj.FullName() {
 				found = true
 			}
 		}
@@ -111,12 +68,12 @@ func allDependenciesIncluded(dependencies []string, objects []DatabaseObject) bo
 	return true
 }
 
-func sortObjects(remaining []DatabaseObject, sorted []DatabaseObject) []DatabaseObject {
+func sortObjects(remaining []*entities.DatabaseObject, sorted []*entities.DatabaseObject) []*entities.DatabaseObject {
 	if len(remaining) == 0 {
 		return sorted
 	}
 
-	var nextRemaining []DatabaseObject
+	var nextRemaining []*entities.DatabaseObject
 
 	for _, obj := range remaining {
 		if allDependenciesIncluded(obj.Dependencies, sorted) {
@@ -129,31 +86,31 @@ func sortObjects(remaining []DatabaseObject, sorted []DatabaseObject) []Database
 	return sortObjects(nextRemaining, sorted)
 }
 
-func LoadDatabaseObjects(dbDir string, provider providers.Provider) ([]DatabaseObject, error) {
+func LoadDatabaseObjects(dbDir string, provider entities.Provider) ([]*entities.DatabaseObject, error) {
 	objectPaths, err := getDatabaseObjectPaths(dbDir)
 	if err != nil {
 		return nil, err
 	}
 
-	var objects []DatabaseObject
+	var objects []*entities.DatabaseObject
 
-	for _, obj := range objectPaths {
-		item, err := createDatabaseObject(obj, provider)
+	for _, objPath := range objectPaths {
+		obj, err := entities.NewDatabaseObject(objPath, provider)
 		if err != nil {
 			return nil, err
 		}
-		objects = append(objects, *item)
+		objects = append(objects, obj)
 	}
 
 	for i, obj := range objects {
-		deps, err := resolveDependencies(&obj, objects, provider)
+		deps, err := resolveDependencies(obj, objects, provider)
 		if err != nil {
 			return nil, err
 		}
 		objects[i].Dependencies = deps
 	}
 
-	var sortedObjects []DatabaseObject
+	var sortedObjects []*entities.DatabaseObject
 	sortedObjects = sortObjects(objects, sortedObjects)
 
 	return sortedObjects, nil

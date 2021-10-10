@@ -57,7 +57,7 @@ the database. Results are cached to the .kumiho folder.`,
 			} else {
 				fmt.Print("├─ ")
 			}
-			fmt.Printf("%s\n", obj.FullName)
+			fmt.Printf("%s\n", obj.FullName())
 			for d, dep := range obj.Dependencies {
 				if isLastObj {
 					fmt.Print("   ")
