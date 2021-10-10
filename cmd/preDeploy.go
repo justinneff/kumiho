@@ -27,6 +27,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/justinneff/kumiho/config"
 	"github.com/justinneff/kumiho/providers"
 	"github.com/justinneff/kumiho/utils"
 	"github.com/spf13/cobra"
@@ -56,7 +57,7 @@ Would add the file ./db/preDeploy/{yyyyMMddHHmmss}_do_something.sql`,
 
 		name := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), args[0])
 
-		outDir, err := utils.GetScriptDir("preDeploy")
+		outDir, err := config.GetScriptDir("preDeploy")
 		cobra.CheckErr(err)
 
 		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))

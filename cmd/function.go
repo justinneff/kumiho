@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/justinneff/kumiho/config"
 	"github.com/justinneff/kumiho/providers"
 	"github.com/justinneff/kumiho/utils"
 	"github.com/spf13/cobra"
@@ -67,7 +68,7 @@ the --table flag`,
 		schema, err := p.ResolveSchema(addCmd.PersistentFlags().Lookup("schema").Value.String())
 		cobra.CheckErr(err)
 
-		outDir, err := utils.GetObjectDir("functions", schema)
+		outDir, err := config.GetObjectDir("functions", schema)
 		cobra.CheckErr(err)
 
 		name := args[0]

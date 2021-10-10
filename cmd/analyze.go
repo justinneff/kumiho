@@ -24,9 +24,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/justinneff/kumiho/config"
 	"github.com/justinneff/kumiho/providers"
 	"github.com/justinneff/kumiho/publishing"
-	"github.com/justinneff/kumiho/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -42,7 +42,7 @@ the database. Results are cached to the .kumiho folder.`,
 		provider, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
-		dbDir, err := utils.GetDatabaseDir()
+		dbDir, err := config.GetDatabaseDir()
 		cobra.CheckErr(err)
 
 		databaseObjects, err := publishing.LoadDatabaseObjects(dbDir, provider)

@@ -6,41 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path"
-
-	"github.com/spf13/viper"
 )
 
 func ComputeHash(data []byte) string {
 	h := sha1.New()
 	h.Write(data)
 	return hex.EncodeToString(h.Sum(nil))
-}
-
-func GetDatabaseDir() (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	return path.Join(cwd, viper.GetString("Dir")), nil
-}
-
-func GetObjectDir(objectType, schema string) (string, error) {
-	dbDir, err := GetDatabaseDir()
-	if err != nil {
-		return "", err
-	}
-
-	return path.Join(dbDir, "objects", schema, objectType), nil
-}
-
-func GetScriptDir(scriptType string) (string, error) {
-	dbDir, err := GetDatabaseDir()
-	if err != nil {
-		return "", err
-	}
-
-	return path.Join(dbDir, scriptType), nil
 }
 
 func WriteOutFile(filename, content string) error {
