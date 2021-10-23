@@ -24,6 +24,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/justinneff/kumiho/cache"
 	"github.com/justinneff/kumiho/config"
 	"github.com/justinneff/kumiho/providers"
 	"github.com/justinneff/kumiho/publishing"
@@ -44,6 +45,14 @@ the database. Results are cached to the .kumiho folder.`,
 
 		dbDir, err := config.GetDatabaseDir()
 		cobra.CheckErr(err)
+
+		isClearCache, err := cmd.Flags().GetBool("clear-cache")
+		cobra.CheckErr(err)
+
+		if isClearCache {
+			err = cache.Clear()
+			cobra.CheckErr(err)
+		}
 
 		databaseObjects, err := publishing.LoadDatabaseObjects(dbDir, provider)
 		cobra.CheckErr(err)
@@ -86,5 +95,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// analyzeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	analyzeCmd.Flags().BoolP("clear-cache", "", false, "Empties the cache folder before analyzing")
 }

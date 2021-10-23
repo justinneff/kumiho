@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"path/filepath"
 
+	"github.com/justinneff/kumiho/cache"
 	"github.com/justinneff/kumiho/entities"
 )
 
@@ -103,11 +104,22 @@ func LoadDatabaseObjects(dbDir string, provider entities.Provider) ([]*entities.
 	}
 
 	for i, obj := range objects {
-		deps, err := resolveDependencies(obj, objects, provider)
+		cacheObj, err := cache.ReadDatabaseObject(obj.Hash)
 		if err != nil {
 			return nil, err
 		}
-		objects[i].Dependencies = deps
+
+		if cacheObj != nil {
+			objects[i].Dependencies = cacheObj.Dependencies
+		} else {
+			deps, err := resolveDependencies(obj, objects, provider)
+			if err != nil {
+				return nil, err
+			}
+			objects[i].Dependencies = deps
+
+			cache.WriteDatabaseObject(*objects[i])
+		}
 	}
 
 	var sortedObjects []*entities.DatabaseObject

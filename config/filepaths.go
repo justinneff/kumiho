@@ -7,6 +7,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+func GetCacheDir() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return path.Join(cwd, viper.GetString("CacheDir")), nil
+}
+
 func GetDatabaseDir() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
