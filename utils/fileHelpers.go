@@ -1,29 +1,17 @@
 package utils
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path"
-
-	"github.com/spf13/viper"
 )
 
-func GetObjectDir(objectType, schema string) (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	return path.Join(cwd, viper.GetString("Dir"), "objects", schema, objectType), nil
-}
-
-func GetScriptDir(scriptType string) (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	return path.Join(cwd, viper.GetString("Dir"), scriptType), nil
+func ComputeHash(data []byte) string {
+	h := sha1.New()
+	h.Write(data)
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func WriteOutFile(filename, content string) error {

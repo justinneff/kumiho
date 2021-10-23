@@ -22,66 +22,78 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"path"
-	"time"
 
+	"github.com/justinneff/kumiho/cache"
 	"github.com/justinneff/kumiho/config"
 	"github.com/justinneff/kumiho/providers"
-	"github.com/justinneff/kumiho/utils"
+	"github.com/justinneff/kumiho/publishing"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// preDeployCmd represents the preDeploy command
-var preDeployCmd = &cobra.Command{
-	Use:   "preDeploy <name>",
-	Short: "Adds a template pre deploy script file",
-	Long: `Adds a new pre deployment script that will be executed before
-migrations are executed.
-
-For example:
-kumiho add preDeploy do_something
-
-Would add the file ./db/preDeploy/{yyyyMMddHHmmss}_do_something.sql`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return errors.New("requires a pre deploy script name")
-		}
-		return nil
-	},
+// analyzeCmd represents the analyze command
+var analyzeCmd = &cobra.Command{
+	Use:   "analyze",
+	Short: "Generates a dependency tree for database objects",
+	Long: `Inspects all database objects and generates a dependency tree for the
+objects. The results are printed showing the order objects will be published to
+the database. Results are cached to the .kumiho folder.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p, err := providers.GetProvider(viper.GetString("Provider"))
+		provider, err := providers.GetProvider(viper.GetString("Provider"))
 		cobra.CheckErr(err)
 
-		name := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), args[0])
-
-		outDir, err := config.GetScriptDir("preDeploy")
+		dbDir, err := config.GetDatabaseDir()
 		cobra.CheckErr(err)
 
-		filename := path.Join(outDir, fmt.Sprintf("%s.sql", name))
-
-		content, err := p.GeneratePreDeploy(name)
+		isClearCache, err := cmd.Flags().GetBool("clear-cache")
 		cobra.CheckErr(err)
 
-		err = utils.WriteOutFile(filename, content)
+		if isClearCache {
+			err = cache.Clear()
+			cobra.CheckErr(err)
+		}
+
+		databaseObjects, err := publishing.LoadDatabaseObjects(dbDir, provider)
 		cobra.CheckErr(err)
 
-		fmt.Printf("Created pre-deployment: %s\n", filename)
+		fmt.Println("\nDatabase Objects with Dependencies")
+
+		for i, obj := range databaseObjects {
+			isLastObj := i == len(databaseObjects)-1
+			if isLastObj {
+				fmt.Print("└─ ")
+			} else {
+				fmt.Print("├─ ")
+			}
+			fmt.Printf("%s\n", obj.FullName())
+			for d, dep := range obj.Dependencies {
+				if isLastObj {
+					fmt.Print("   ")
+				} else {
+					fmt.Print("│  ")
+				}
+				if d == len(obj.Dependencies)-1 {
+					fmt.Print("└─ ")
+				} else {
+					fmt.Print("├─ ")
+				}
+				fmt.Printf("%s\n", dep)
+			}
+		}
 	},
 }
 
 func init() {
-	addCmd.AddCommand(preDeployCmd)
+	rootCmd.AddCommand(analyzeCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// preDeployCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// analyzeCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// preDeployCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	analyzeCmd.Flags().BoolP("clear-cache", "", false, "Empties the cache folder before analyzing")
 }

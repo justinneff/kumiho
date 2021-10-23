@@ -1,9 +1,15 @@
 package providers
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+	"strings"
+)
 
 type Mssql struct {
 }
+
+const mssqlDefaultSchema = "dbo"
 
 func (mssql Mssql) GenerateMigration(name string) (string, error) {
 	template := `/*******************************************************************************
@@ -103,9 +109,43 @@ FROM
 	return fmt.Sprintf(template, schema, name), nil
 }
 
+func (mssql Mssql) GetObjectSchemaAndName(content []byte) (schema, name string) {
+	r := regexp.MustCompile(`(?i)CREATE\s+(?:FUNCTION|PROCEDURE|VIEW)\s+(\[?[\w\.\[\]]+)`)
+	matches := r.FindSubmatch(content)
+	if len(matches) == 2 {
+		fullName := strings.ReplaceAll(strings.ReplaceAll(string(matches[1]), "[", ""), "]", "")
+		parts := strings.Split(fullName, ".")
+		if len(parts) == 1 {
+			schema = mssqlDefaultSchema
+			name = parts[0]
+		} else {
+			schema = parts[0]
+			name = parts[1]
+		}
+	}
+	return
+}
+
+func (mssql Mssql) IsDependency(content []byte, schema, name string) (matched bool, err error) {
+	matched = false
+	if len(schema) > 0 {
+		pattern1 := fmt.Sprintf(`(?i)\[?%s\]?\.\[?%s\]?`, schema, name)
+		if matched, err = regexp.Match(pattern1, content); err != nil {
+			return
+		}
+	}
+	if !matched {
+		pattern2 := fmt.Sprintf(`(?i)[^\.]\[?%s\]?`, name)
+		if matched, err = regexp.Match(pattern2, content); err != nil {
+			return
+		}
+	}
+	return
+}
+
 func (mssql Mssql) ResolveSchema(schema string) (string, error) {
 	if len(schema) == 0 {
-		return "dbo", nil
+		return mssqlDefaultSchema, nil
 	} else {
 		return schema, nil
 	}

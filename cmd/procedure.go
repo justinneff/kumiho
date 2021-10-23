@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/justinneff/kumiho/config"
 	"github.com/justinneff/kumiho/providers"
 	"github.com/justinneff/kumiho/utils"
 	"github.com/spf13/cobra"
@@ -64,7 +65,7 @@ This would create the file ./db/objects/Sales/procedures/my_procedure.sql.`,
 		schema, err := p.ResolveSchema(addCmd.PersistentFlags().Lookup("schema").Value.String())
 		cobra.CheckErr(err)
 
-		outDir, err := utils.GetObjectDir("procedures", schema)
+		outDir, err := config.GetObjectDir("procedures", schema)
 		cobra.CheckErr(err)
 
 		name := args[0]
